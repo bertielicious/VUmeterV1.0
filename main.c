@@ -786,16 +786,20 @@ void main(void)
    
    while(1)
    {
-    ADCON0bits.GO_nDONE = HI;       //A/D conversion cycle in progress. Setting this bit starts an A/D conversion cycle.
-                                    //This bit is automatically cleared by hardware when the A/D conversion has completed.
-        while(ADCON0bits.GO_nDONE == HI)
-        {
-            ;   // wait for GO_nDONE to clear
+       adcVal = 0;
+       for (int i = 0; i < 2500; i++) {
+           ADCON0bits.GO_nDONE = HI;
+           while (ADCON0bits.GO_nDONE == HI)
+               ;
+           int16_t q = ((int16_t)ADRESH)<<8 | ADRESL;
+           if (q > adcVal) {
+               adcVal = q;
+           }
         }
-        adcVal = (int16_t)(ADRESH<<8 | ADRESL);
-
+              
         angle = adcVal;
      
+        clearPCD8544();
         for(radius = 0; radius <=43; radius++)
         {
             opposite = radius * sineLookUp[angle];     // x = opposite
@@ -811,8 +815,6 @@ void main(void)
                 writeData(ypixel.byte);
              }
         }
-        __delay_ms(25);
-        clearPCD8544();
         }      
    }
    
